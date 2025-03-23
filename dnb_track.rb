@@ -1,134 +1,130 @@
-# CRYSTAL CASTLES INSPIRED TRACK
-# ===========================
+# CRYSTAL CASTLES "KEPT" INSPIRED TRACK
+# =================================
 
-# Set faster BPM for aggressive electronic pace
-use_bpm 140
+# Set slower BPM for dreamy, melancholic pace (like "Kept")
+use_bpm 120
 
 # Track structure
-set :phase, 0  # 0=intro, 1=beat, 2=glitch chorus, 3=breakdown
+set :phase, 0  # 0=intro, 1=verse, 2=chorus, 3=breakdown
 
-# Define notes - Crystal Castles often uses minor scales with dissonance
-melody_notes = (ring :e4, :g4, :b4, :c5, :b4, :g4)  # minor scale fragments
-baseline_notes = (ring :e2, :e2, :g2, :a2)  # simple pattern
-glitch_notes = (ring :e5, :fs5, :g5, :b5, :c6)  # higher register for glitches
+# Define notes - "Kept" uses melancholic minor scales with haunting intervals
+melody_notes = (ring :e4, :b4, :g4, :fs4, :e4, :b3)  # melancholic e minor
+baseline_notes = (ring :e2, :b2, :g2, :fs2)  # simple pattern
+vocal_notes = (ring :e5, :b4, :g4, :fs4, :e4)  # for ethereal vocal-like sounds
 
-# Global FX to add lofi character
-with_fx :ixi_techno, phase: 8, phase_offset: 0.5, cutoff_min: 70, cutoff_max: 110, res: 0.5, mix: 0.2 do
+# Global FX to add dreamy character ("Kept" has a hazy, dreamy quality)
+with_fx :reverb, room: 0.9, mix: 0.4 do
+with_fx :echo, phase: 0.25, decay: 4, mix: 0.3 do
 
   # Master clock
   live_loop :clock do
     curr_bar = tick
     
-    # Track structure automation
+    # Track structure automation ("Kept" has a gradual build structure)
     set :phase, 0 if curr_bar == 0  # Intro
-    set :phase, 1 if curr_bar == 4  # Beat kicks in
-    set :phase, 2 if curr_bar == 12  # Glitch chorus
-    set :phase, 3 if curr_bar == 20  # Breakdown
-    set :phase, 1 if curr_bar == 24  # Back to beat
-    set :phase, 2 if curr_bar == 32  # Glitch chorus reprise
+    set :phase, 1 if curr_bar == 8  # Verse (longer intro like "Kept")
+    set :phase, 2 if curr_bar == 16  # Chorus
+    set :phase, 3 if curr_bar == 24  # Breakdown
+    set :phase, 1 if curr_bar == 32  # Back to verse
+    set :phase, 2 if curr_bar == 40  # Final chorus
     
     puts "Bar: #{curr_bar}, Phase: #{get(:phase)}"
     sleep 4
   end
 
-  # 8-bit style main melody (Crystal Castles signature sound)
-  live_loop :chiptune_lead, sync: :clock do
+  # Dreamy melody ("Kept" has a melancholic, ethereal lead melody)
+  live_loop :dreamy_lead, sync: :clock do
     phase = get(:phase)
     
     case phase
-    when 0  # Intro - sparse notes
+    when 0  # Intro - sparse, haunting notes
+      with_fx :reverb, mix: 0.8, room: 0.9 do
+        with_fx :bitcrusher, bits: 10, sample_rate: 16000 do  # Less crushed than typical CC
+          with_synth :dsaw do
+            play melody_notes.look, release: 1.5, amp: 0.3, cutoff: 85
+            sleep [1, 2].choose  # Slower, more sparse like "Kept"
+          end
+        end
+      end
+    when 1  # Verse - main melody like "Kept"
       with_fx :reverb, mix: 0.7, room: 0.8 do
-        with_fx :bitcrusher, bits: 8, sample_rate: 11000 do
+        with_fx :bitcrusher, bits: 12, sample_rate: 16000 do  # Cleaner sound
           with_synth :dsaw do
-            play melody_notes.look, release: 0.3, amp: 0.4, cutoff: 95
-            sleep [0.5, 0.5, 0.25, 0.25, 0.5].choose
+            play melody_notes.tick, release: 0.8, amp: 0.4, cutoff: 90
+            sleep 0.5  # More regular pattern like "Kept"
           end
         end
       end
-    when 1  # Main beat
-      with_fx :bitcrusher, bits: 8, sample_rate: 12000 do
-        with_synth :dsaw do
-          play melody_notes.tick, release: 0.2, amp: 0.6, cutoff: 100
-          sleep 0.25
-        end
-      end
-    when 2  # Glitch chorus - more intense
-      if one_in(3)  # Random glitching effect
-        with_fx :krush, gain: 15, cutoff: 130, res: 0.95 do
+    when 2  # Chorus - fuller sound but still dreamy
+      with_fx :reverb, mix: 0.8, room: 0.9 do
+        with_fx :bitcrusher, bits: 10, sample_rate: 12000 do
           with_synth :dsaw do
-            3.times do
-              play glitch_notes.choose, release: 0.1, amp: 0.6, pan: rrand(-0.7, 0.7)
-              sleep 0.125
+            play melody_notes.tick, release: 1.0, amp: 0.5, cutoff: 95
+            sleep 0.5
+            
+            # Occasional harmony notes ("Kept" has layered synths)
+            if one_in(3)
+              play melody_notes.look + 7, release: 0.8, amp: 0.3  # Add a fifth
             end
-            sleep 0.125
-          end
-        end
-      else
-        with_fx :bitcrusher, bits: 4, sample_rate: 8000 do
-          with_synth :dsaw do
-            play melody_notes.reverse.tick, release: 0.2, amp: 0.7, cutoff: 110
-            sleep 0.25
+            sleep 0.5
           end
         end
       end
-    when 3  # Breakdown - sparse elements
-      if one_in(3)
-        with_fx :echo, phase: 0.25, decay: 4 do
-          with_fx :distortion, distort: 0.5 do
-            with_synth :dsaw do
-              play melody_notes.choose, release: 0.5, amp: 0.3
-              sleep [0.5, 0.75, 1].choose
-            end
+    when 3  # Breakdown - sparse, ethereal elements
+      with_fx :reverb, mix: 0.9, room: 0.95 do
+        with_fx :echo, phase: 0.5, decay: 6, mix: 0.7 do
+          with_synth :dsaw do
+            play melody_notes.choose, release: 2.5, amp: 0.25, cutoff: 80
+            sleep [1, 1.5, 2].choose  # Slow, floating notes
           end
         end
-      else
-        sleep 0.5
       end
     end
   end
 
-  # Distorted beats (Crystal Castles style)
-  live_loop :distorted_beats, sync: :clock do
+  # Dreamy beats ("Kept" has a consistent, muted beat pattern)
+  live_loop :kept_beats, sync: :clock do
     phase = get(:phase)
     
     case phase
-    when 0  # Intro - minimal
-      sample :bd_haus, amp: 0.6, rate: 0.9 if spread(3, 8).tick
-      sleep 0.5
-    when 1, 2  # Main beat and glitch chorus
-      # Kick drum pattern
-      if phase == 1
-        # Regular beat
-        sample :bd_haus, amp: 0.9, rate: 0.9 if (spread(4, 16).tick)
-      else
-        # Glitchier beat
-        sample :bd_haus, amp: 1.0, rate: [0.8, 0.9, 1.0].choose if (spread(5, 16).tick)
-      end
-      
-      # Distorted hits
-      with_fx :distortion, distort: 0.7 do
-        sample :elec_blip, amp: 0.4, rate: 2 if spread(2, 16).look
-        sample :elec_blip, amp: 0.3, rate: 1.5 if spread(3, 8).look
-      end
-      
-      # Crystal Castles signature noisy snare
-      if phase == 2 && one_in(4)  # Extra glitchy during chorus
-        with_fx :krush, gain: 15, mix: 0.7 do
-          sample :sn_dolf, amp: 0.6, rate: [0.8, 1.2].choose
+    when 0  # Intro - minimal, distant beats
+      if one_in(4)  # Very sparse
+        with_fx :lpf, cutoff: 70 do  # Muted, distant feeling
+          sample :bd_haus, amp: 0.4, rate: 0.8
         end
-      elsif spread(2, 8).look
-        with_fx :bitcrusher, bits: 4, sample_rate: 4000 do
-          sample :sn_dolf, amp: 0.5, rate: 0.9
+      end
+      sleep 1
+    when 1, 2  # Verse and chorus - consistent beat like "Kept"
+      # "Kept" has a steady, muted kick pattern
+      with_fx :lpf, cutoff: (phase == 1 ? 80 : 90) do  # Slightly brighter in chorus
+        sample :bd_haus, amp: 0.7, rate: 0.8 if (spread(4, 16).tick)  # Steady quarter notes
+      end
+      
+      # Hi-hats - "Kept" has subtle, consistent hi-hats
+      if phase == 2 || one_in(2)  # More hi-hats in chorus
+        with_fx :hpf, cutoff: 110 do
+          with_fx :bitcrusher, bits: 12, sample_rate: 10000 do  # Subtle lo-fi quality
+            sample :drum_cymbal_closed, amp: 0.2, rate: 1.1 if spread(8, 16).look
+          end
+        end
+      end
+      
+      # Snare - "Kept" has a muted, distant snare on 2 and 4
+      if spread(2, 16).look && (look % 16 == 4 || look % 16 == 12)
+        with_fx :bitcrusher, bits: 8, sample_rate: 8000 do
+          with_fx :reverb, mix: 0.6, room: 0.8 do
+            sample :sn_dolf, amp: 0.4, rate: 0.9
+          end
         end
       end
       
       sleep 0.25
-    when 3  # Breakdown
-      # Sparse drums
-      if one_in(4)
-        with_fx :echo, phase: 0.25, decay: 2 do
-          with_fx :distortion, distort: 0.8 do
-            sample :bd_haus, amp: 0.6, rate: 0.8
+    when 3  # Breakdown - minimal percussion
+      # "Kept" breakdown has sparse, echoed percussion
+      if one_in(8)
+        with_fx :echo, phase: 0.75, decay: 4, mix: 0.7 do
+          with_fx :reverb, mix: 0.8, room: 0.9 do
+            sample :bd_haus, amp: 0.3, rate: 0.7
           end
         end
       end
@@ -136,132 +132,170 @@ with_fx :ixi_techno, phase: 8, phase_offset: 0.5, cutoff_min: 70, cutoff_max: 11
     end
   end
 
-  # Glitchy arpeggios (Crystal Castles often uses these)
-  live_loop :glitch_arps, sync: :clock do
+  # Dreamy bass ("Kept" has a soft, pulsing bass)
+  live_loop :kept_bass, sync: :clock do
     phase = get(:phase)
     
     case phase
-    when 0  # Intro
-      sleep 4  # Silent during intro
-    when 1  # Main beat
-      # Simple arpeggio
-      with_fx :slicer, phase: 0.25, wave: 0 do
-        with_fx :bitcrusher, bits: 10, sample_rate: 10000 do
-          with_synth :tb303 do
-            play baseline_notes.tick, release: 0.1, cutoff: rrand(80, 100), res: 0.9, amp: 0.5
-            sleep 0.25
-          end
-        end
-      end
-    when 2  # Glitch chorus - chaotic arpeggios
-      # Crystal Castles style controlled chaos
-      with_fx :krush, gain: 15, res: 0.8, cutoff: 90 do
-        with_fx :bitcrusher, bits: 8, sample_rate: 4000 do
-          with_synth :tb303 do
-            play baseline_notes.shuffle.tick, release: 0.15, cutoff: rrand(70, 120), 
-                 res: 0.95, amp: 0.7, wave: [0, 1].choose
-            sleep [0.125, 0.25].choose  # Irregular timing
-          end
-        end
-      end
-    when 3  # Breakdown
-      # Occasional low notes
-      if one_in(4)
-        with_fx :reverb, room: 0.9 do
-          with_fx :distortion, distort: 0.2 do
-            with_synth :tb303 do
-              play baseline_notes.choose - 12, release: 2, cutoff: 60, res: 0.5, amp: 0.4
-              sleep 0.5
-            end
-          end
-        end
-      else
-        sleep 0.5
-      end
-    end
-  end
-
-  # Noise and atmospheric elements (typical in Crystal Castles tracks)
-  live_loop :noise_textures, sync: :clock do
-    phase = get(:phase)
-    
-    case phase
-    when 0  # Intro
-      # Ambient noise
-      with_fx :reverb, mix: 0.9, room: 0.9 do
-        with_fx :echo, phase: 0.25, decay: 4 do
-          with_synth :noise do
-            play :e2, release: 4, cutoff: rrand(60, 90), amp: 0.3
+    when 0  # Intro - subtle bass swells
+      with_fx :reverb, room: 0.8, mix: 0.5 do
+        with_fx :lpf, cutoff: 70 do
+          with_synth :fm do  # Softer synth than tb303
+            play baseline_notes.tick - 12, release: 4, amp: 0.3, depth: 1
             sleep 4
           end
         end
       end
-    when 1  # Main beat - less noise
-      if one_in(3)
-        with_fx :hpf, cutoff: 90 do
-          with_synth :noise do
-            play :e3, release: 0.5, cutoff: 110, amp: 0.2
-            sleep 0.5
+    when 1  # Verse - pulsing bass like in "Kept"
+      with_fx :lpf, cutoff: 80 do
+        with_fx :bitcrusher, bits: 12, sample_rate: 12000 do  # Subtle lo-fi quality
+          with_synth :fm do
+            play baseline_notes.tick, release: 0.8, amp: 0.4, depth: 1.5
+            sleep 1  # Regular pulse like in "Kept"
           end
         end
-      else
-        sleep 0.5
       end
-    when 2  # Glitch chorus - heavy noise elements
-      # Crystal Castles uses aggressive noise bursts
+    when 2  # Chorus - slightly more present bass
+      with_fx :lpf, cutoff: 85 do
+        with_fx :bitcrusher, bits: 10, sample_rate: 10000 do
+          with_synth :fm do
+            play baseline_notes.tick, release: 1, amp: 0.5, depth: 2
+            sleep 1
+          end
+        end
+      end
+    when 3  # Breakdown - occasional deep bass notes
       if one_in(3)
-        with_fx :krush, gain: 15, cutoff: rand(130) do
-          with_fx :distortion, distort: 0.8 do
-            with_synth :noise do
-              play :e3, release: 0.2, cutoff: rrand(80, 120), amp: 0.4
-              sleep 0.25
+        with_fx :reverb, room: 0.9, mix: 0.6 do
+          with_fx :lpf, cutoff: 60 do
+            with_synth :fm do
+              play baseline_notes.choose - 12, release: 4, amp: 0.3, depth: 1
+              sleep 2
             end
           end
         end
       else
-        sleep 0.25
+        sleep 2
       end
-    when 3  # Breakdown - atmospheric noise
-      with_fx :reverb, mix: 0.95, room: 0.9 do
-        with_fx :echo, phase: 0.25, decay: 8 do
+    end
+  end
+
+  # Dreamy pads and atmosphere ("Kept" has lush, ethereal pads)
+  live_loop :kept_atmosphere, sync: :clock do
+    phase = get(:phase)
+    
+    case phase
+    when 0  # Intro - ambient, dreamy pads
+      with_fx :reverb, mix: 0.9, room: 0.95 do
+        with_fx :echo, phase: 0.5, decay: 8, mix: 0.4 do
+          with_synth :hollow do  # Ethereal pad sound
+            play chord(:e3, :minor), release: 8, amp: 0.3, attack: 2
+            sleep 8
+          end
+        end
+      end
+    when 1  # Verse - subtle atmospheric elements
+      with_fx :reverb, mix: 0.8, room: 0.9 do
+        with_fx :lpf, cutoff: 90 do
+          with_synth :hollow do
+            play chord(:e3, :minor), release: 4, amp: 0.25, attack: 1
+            sleep 4
+          end
+        end
+      end
+      
+      # Occasional subtle noise swells like in "Kept"
+      if one_in(4)
+        with_fx :hpf, cutoff: 80 do
           with_synth :noise do
-            play :e2, release: 2, cutoff: 70, amp: 0.2
-            sleep 1
+            play :e4, release: 2, cutoff: 100, amp: 0.15
+            sleep 2
+          end
+        end
+      else
+        sleep 2
+      end
+    when 2  # Chorus - fuller pads
+      with_fx :reverb, mix: 0.85, room: 0.9 do
+        with_fx :echo, phase: 0.75, decay: 4, mix: 0.3 do
+          with_synth :hollow do
+            play chord(:e3, :minor), release: 4, amp: 0.35, attack: 0.5
+            sleep 4
+          end
+        end
+      end
+    when 3  # Breakdown - ethereal atmosphere
+      with_fx :reverb, mix: 0.95, room: 0.95 do
+        with_fx :echo, phase: 0.75, decay: 8, mix: 0.5 do
+          with_synth :hollow do
+            play chord(:e3, :minor), release: 8, amp: 0.3, attack: 2
+            sleep 8
           end
         end
       end
     end
   end
 
-  # Crystal Castles-style vocal chops/samples (simulated)
-  live_loop :vocal_chops, sync: :clock do
+  # Alice Glass-style ethereal vocals ("Kept" features dreamy, processed vocals)
+  live_loop :kept_vocals, sync: :clock do
     phase = get(:phase)
     
     case phase
-    when 0, 3  # Intro and breakdown - silent
-      sleep 4
-    when 1  # Main beat - occasional vocal chop
+    when 0  # Intro - occasional ethereal vocal hints
       if one_in(4)
-        with_fx :echo, phase: 0.25, decay: 2 do
-          with_fx :reverb, mix: 0.7 do
-            # Since we don't have actual vocal samples, simulate with these:
-            sample [:elec_hollow_kick, :elec_twip, :ambi_choir].choose, rate: [0.5, 0.8, 1.2, 1.5].choose, 
-                   amp: 0.4, onset: rand
+        with_fx :reverb, mix: 0.9, room: 0.95 do
+          with_fx :echo, phase: 0.5, decay: 8, mix: 0.7 do
+            # Simulate Alice Glass's ethereal vocals in "Kept"
+            sample :ambi_choir, rate: 0.5, amp: 0.2
+            sleep 4
           end
         end
+      else
+        sleep 4
       end
-      sleep 1
-    when 2  # Glitch chorus - more vocal elements
+    when 1  # Verse - subtle vocal elements
       if one_in(3)
-        with_fx :krush, gain: 10, res: 0.8, cutoff: 100 do
-          with_fx :bitcrusher, bits: 6, sample_rate: 8000 do
-            # Crystal Castles often uses heavily processed vocals
-            sample [:elec_bell, :elec_twip, :ambi_choir].choose, rate: [0.5, 0.8, 1.2, -0.8].choose, 
-                   amp: 0.5, attack: 0.01, sustain: 0.1, release: 0.1
+        with_fx :reverb, mix: 0.8, room: 0.9 do
+          with_fx :echo, phase: 0.25, decay: 4, mix: 0.6 do
+            # "Kept" has dreamy, floating vocals
+            sample :ambi_choir, rate: [0.5, 0.6, 0.7].choose, amp: 0.25
+            sleep 2
           end
         end
+      else
+        sleep 2
       end
-      sleep 0.5
+    when 2  # Chorus - more prominent vocals like in "Kept"
+      if one_in(2)  # More frequent
+        with_fx :reverb, mix: 0.85, room: 0.9 do
+          with_fx :bitcrusher, bits: 12, sample_rate: 16000 do  # Subtle lo-fi quality
+            # "Kept" has layered, processed vocals
+            sample :ambi_choir, rate: [0.5, 0.6, 0.7, 0.8].choose, amp: 0.3
+            
+            # Occasionally play a note from the vocal_notes scale
+            if one_in(3)
+              with_synth :pretty_bell do  # Bell-like quality similar to "Kept"
+                play vocal_notes.choose, release: 2, amp: 0.2
+              end
+            end
+            
+            sleep 2
+          end
+        end
+      else
+        sleep 2
+      end
+    when 3  # Breakdown - sparse, ethereal vocals
+      if one_in(3)
+        with_fx :reverb, mix: 0.95, room: 0.95 do
+          with_fx :echo, phase: 0.75, decay: 8, mix: 0.8 do
+            sample :ambi_choir, rate: 0.4, amp: 0.2
+            sleep 4
+          end
+        end
+      else
+        sleep 4
+      end
     end
   end
 end
